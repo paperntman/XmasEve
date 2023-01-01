@@ -1,0 +1,9 @@
+main: topen.Main
+version: 2.0
+name: Xmas-Eve
+
+commands:
+  getbook:
+  inventory:
+  getitem:
+  worldteleport:

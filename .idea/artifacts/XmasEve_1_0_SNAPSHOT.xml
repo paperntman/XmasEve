@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="XmasEve-1.0-SNAPSHOT">
+    <output-path>$USER_HOME$/Server/plugins</output-path>
+    <root id="archive" name="XmasEve-1.0-SNAPSHOT.jar">
+      <element id="module-output" name="XmasEve.main" />
+      <element id="library" level="project" name="Gradle: org.reflections:reflections:0.10.2" />
+      <element id="library" level="project" name="Gradle: org.javassist:javassist:3.29.2-GA" />
+      <element id="file-copy" path="$PROJECT_DIR$/src/main/resources/plugin.yml" />
+    </root>
+  </artifact>
+</component>
