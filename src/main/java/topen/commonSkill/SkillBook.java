@@ -1,4 +1,4 @@
-package topen.Skill;
+package topen.commonSkill;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;

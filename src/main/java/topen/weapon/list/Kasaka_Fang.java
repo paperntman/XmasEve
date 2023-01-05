@@ -17,7 +17,6 @@ import topen.Main;
 import topen.weapon.iWeapon;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
 
@@ -51,7 +50,6 @@ public class Kasaka_Fang implements iWeapon {
                     freeze.put(e.getEntity(), new temp(e.getEntity().getLocation().clone(), e.getEntity().getWorld().getFullTime()));
                     taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(Main.main, () -> {
                         if(freeze.isEmpty()) stopTask();
-                        freeze.
                     }, 0, 1);
                 }
             }

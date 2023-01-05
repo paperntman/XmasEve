@@ -1,4 +1,4 @@
-package topen.Skill.list;
+package topen.commonSkill.list;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -9,7 +9,9 @@ import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import topen.Main;
-import topen.Skill.iActiveSkill;
+import topen.PlayerFileManager;
+import topen.TopenPlayer;
+import topen.commonSkill.iActiveSkill;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -18,7 +20,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class RealmOfDeath implements iActiveSkill {
 
-    int asdf;
+    int task1, task2;
+
+    @Override
+    public int manaNeeded() {
+        return 100;
+    }
+
     @Override
     public void onUse(Player attacker) {
         final List<Entity> entities = attacker.getWorld().getNearbyEntities(attacker.getLocation(), 5, 5, 5).stream().filter(entity -> entity instanceof Player && entity != attacker)
@@ -40,7 +48,8 @@ public class RealmOfDeath implements iActiveSkill {
 
             ArrayList<Integer> taskList = new ArrayList<>();
             final double[] stolenAttribute = new double[5];
-            final Attribute[] attributeList = {Attribute.GENERIC_MAX_HEALTH, Attribute.GENERIC_ARMOR, Attribute.GENERIC_MOVEMENT_SPEED, Attribute.GENERIC_ATTACK_SPEED, Attribute.GENERIC_ATTACK_DAMAGE};
+            final Attribute[] attributeList = {Attribute.GENERIC_ARMOR, Attribute.GENERIC_MOVEMENT_SPEED, Attribute.GENERIC_ATTACK_SPEED, Attribute.GENERIC_ATTACK_DAMAGE};
+            final double[] stolenHealth = {0};
 
             for (int i = 0; i < attributeList.length; i++) {
                 final AttributeInstance victimAttribute = victim.getAttribute(attributeList[i]);
@@ -51,21 +60,36 @@ public class RealmOfDeath implements iActiveSkill {
                 victimAttribute.setBaseValue(victimAttribute.getBaseValue()- stolenAttribute[i]);
                 attackerAttribute.setBaseValue(attackerAttribute.getBaseValue()+ stolenAttribute[i]);
 
-                System.out.printf("Attribute : %s, Stolen : %f, Victim : %f, Attacker : %f", attributeList[i].name(), stolenAttribute[i], victimAttribute.getBaseValue(), attackerAttribute.getBaseValue());
+                System.out.printf("Attribute : %s, Stolen : %f, Victim : %f, Attacker : %f\n", attributeList[i].name(), stolenAttribute[i], victimAttribute.getBaseValue(), attackerAttribute.getBaseValue());
 
                 int finalI = i;
                 taskList.add(Bukkit.getScheduler().runTaskLater(Main.main, () -> {
                     victimAttribute.setBaseValue(victimAttribute.getBaseValue() + stolenAttribute[finalI]);
                     attackerAttribute.setBaseValue(attackerAttribute.getBaseValue() - stolenAttribute[finalI]);
-                    attacker.teleport(attackerLocation);
-                    victim.teleport(victimLocation);
                 }, 800).getTaskId());
 
             }
+            final TopenPlayer attackerTopenPlayer = PlayerFileManager.getPlayer(attacker.getUniqueId());
+            final TopenPlayer victimTopenPlayer = PlayerFileManager.getPlayer(victim.getUniqueId());
+
+            stolenHealth[0] = victimTopenPlayer.getMaxHealth() / 10;
+
+            attackerTopenPlayer.setMaxHealth(attackerTopenPlayer.getMaxHealth()+stolenHealth[0]);
+            victimTopenPlayer.setMaxHealth(victimTopenPlayer.getMaxHealth()-stolenHealth[0]);
+
+            taskList.add(Bukkit.getScheduler().runTaskLater(Main.main, () -> {
+                attackerTopenPlayer.setMaxHealth(attackerTopenPlayer.getMaxHealth()-stolenHealth[0]);
+                victimTopenPlayer.setMaxHealth(victimTopenPlayer.getMaxHealth()+stolenHealth[0]);
+            }, 800).getTaskId());
+
+
+            System.out.printf("Attribute : %s, Stolen : %f, Victim : %f, Attacker : %f\n", "health", stolenHealth[0], victimTopenPlayer.getMaxHealth(), attackerTopenPlayer.getMaxHealth());
+
+
 
 
             AtomicInteger ticks = new AtomicInteger();
-            asdf = Bukkit.getScheduler().scheduleSyncRepeatingTask(Main.main, () -> {
+            task1 = Bukkit.getScheduler().scheduleSyncRepeatingTask(Main.main, () -> {
                 if(ticks.get() > 800) cancelTask();
                 if(victim.isDead() || attacker.isDead()){
                     taskList.forEach(Bukkit.getScheduler()::cancelTask);
@@ -79,10 +103,18 @@ public class RealmOfDeath implements iActiveSkill {
                             victimAttribute.setBaseValue(victimAttribute.getBaseValue() + stolenAttribute[finalI]);
                             attackerAttribute.setBaseValue(attackerAttribute.getBaseValue() - stolenAttribute[finalI]);
                             System.out.printf("Attribute : %s, Stolen : %f, Victim : %f, Attacker : %f\n", attributeList[finalI].name(), stolenAttribute[finalI], victimAttribute.getBaseValue(), attackerAttribute.getBaseValue());
-                        }, 600);
+                            }, 600);
                     }
+
+                    Bukkit.getScheduler().runTaskLater(Main.main, () -> {
+                    attackerTopenPlayer.setMaxHealth(attackerTopenPlayer.getMaxHealth()-stolenHealth[0]);
+                    victimTopenPlayer.setMaxHealth(attackerTopenPlayer.getMaxHealth()+stolenHealth[0]);
+                    System.out.printf("Attribute : %s, Stolen : %f, Victim : %f, Attacker : %f\n", "health", stolenHealth[0], victimTopenPlayer.getMaxHealth(), attackerTopenPlayer.getMaxHealth());
                     attacker.teleport(attackerLocation);
                     victim.teleport(victimLocation);
+                    }, 600);
+
+
                     cancelTask();
                 }
                 ticks.getAndIncrement();
@@ -91,7 +123,7 @@ public class RealmOfDeath implements iActiveSkill {
     }
 
     private void cancelTask(){
-        Bukkit.getScheduler().cancelTask(asdf);
+        Bukkit.getScheduler().cancelTask(task1);
     }
 
     @Override

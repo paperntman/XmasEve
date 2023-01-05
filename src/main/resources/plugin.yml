@@ -7,3 +7,4 @@ commands:
   inventory:
   getitem:
   worldteleport:
+  smartkey:

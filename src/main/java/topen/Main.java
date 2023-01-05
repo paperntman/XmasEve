@@ -7,14 +7,15 @@ import org.bukkit.WorldType;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.generator.WorldInfo;
 import org.bukkit.plugin.java.JavaPlugin;
-import topen.Skill.SkillBookImporter;
-import topen.Skill.SkillManager;
-import topen.Skill.SkillUse;
+import topen.commonSkill.SkillBookImporter;
+import topen.commonSkill.SkillManager;
+import topen.commonSkill.ActiveSkillManager;
 import topen.cmd.WorldTeleport;
 import topen.cmd.getBook;
 import topen.cmd.getItem;
-import topen.inventory.InventoryClick;
-import topen.inventory.InventoryCmd;
+import topen.commonSkill.InventoryClick;
+import topen.commonSkill.InventoryCmd;
+import topen.cmd.smartKey;
 import topen.weapon.WeaponManager;
 
 import java.util.Random;
@@ -28,7 +29,8 @@ public class Main extends JavaPlugin{
         Bukkit.getLogger().info("[Xmas-Eve] Enabled!");
         Bukkit.getPluginManager().registerEvents(new SkillBookImporter(), this);
         Bukkit.getPluginManager().registerEvents(new InventoryClick(), this);
-        Bukkit.getPluginManager().registerEvents(new SkillUse(), this);
+        Bukkit.getPluginManager().registerEvents(new ActiveSkillManager(), this);
+        Bukkit.getPluginManager().registerEvents(new DamageManager(), this);
         Bukkit.getPluginManager().registerEvents(new DontSpawnKill(), this);
         main = this;
         getCommand("getbook").setTabCompleter(new getBook());
@@ -38,6 +40,7 @@ public class Main extends JavaPlugin{
         getCommand("inventory").setExecutor(new InventoryCmd());
         getCommand("worldteleport").setTabCompleter(new WorldTeleport());
         getCommand("worldteleport").setExecutor(new WorldTeleport());
+        getCommand("smartkey").setExecutor(new smartKey());
         SkillManager.setup();
         WeaponManager.setup();
 

@@ -3,7 +3,7 @@ package topen;
 import java.io.*;
 import java.util.UUID;
 
-public class PlayerManager {
+public class PlayerFileManager {
     public static TopenPlayer getPlayer(UUID uuid){
         File file = new File(Main.main.getDataFolder().getPath()+File.separator+uuid.toString());
         if(!file.exists()) return new TopenPlayer(uuid);

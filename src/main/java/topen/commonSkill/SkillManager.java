@@ -1,12 +1,9 @@
-package topen.Skill;
+package topen.commonSkill;
 
 import org.bukkit.Bukkit;
 import topen.Main;
-import topen.Skill.list.Heal;
-import topen.Skill.list.RealmOfDeath;
-import topen.Skill.list.Vampiring;
-import topen.Skill.list.Necromancy.shadowChange;
-import topen.Skill.list.swordsman_skill;
+import topen.commonSkill.list.*;
+import topen.commonSkill.list.Necromancy.shadowChange;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -34,6 +31,8 @@ public class SkillManager {
         skillSet.add(new swordsman_skill());
         skillSet.add(new shadowChange());
         skillSet.add(new RealmOfDeath());
+        skillSet.add(new ArmorStand());
+        skillSet.add(new ArcherMaster());
 
         for (iSkill iSkill : skillSet) {
             if(iSkill instanceof iPassiveSkill passiveSkill) Bukkit.getPluginManager().registerEvents(passiveSkill, Main.main);

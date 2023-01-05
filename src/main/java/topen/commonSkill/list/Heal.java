@@ -1,8 +1,8 @@
-package topen.Skill.list;
+package topen.commonSkill.list;
 
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import topen.Skill.iActiveSkill;
+import topen.commonSkill.iActiveSkill;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -30,7 +30,13 @@ public class Heal implements iActiveSkill {
 
 
     @Override
+    public int manaNeeded() {
+        return 65;
+    }
+
+    @Override
     public void onUse(Player p) {
+
         final Collection<Entity> nearbyEntities = p.getWorld().getNearbyEntities(p.getLocation(), 5, 5, 5);
         System.out.println(Arrays.toString(nearbyEntities.toArray()));
     }

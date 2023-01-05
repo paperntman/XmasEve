@@ -1,5 +1,6 @@
-package topen.Skill;
+package topen.commonSkill;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -11,7 +12,7 @@ import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
-import topen.PlayerManager;
+import topen.PlayerFileManager;
 import topen.TopenPlayer;
 import topen.weapon.WeaponManager;
 
@@ -21,7 +22,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
-public class SkillUse implements Listener {
+public class ActiveSkillManager implements Listener {
 
     class temp{
         ItemStack[] itemStacks;
@@ -32,16 +33,22 @@ public class SkillUse implements Listener {
             this.slot = slot;
         }
     }
-    private Map<Player, temp> waiting = new HashMap<>();
+    public static Map<Player, temp> waiting = new HashMap<>();
     private boolean justChanged = false;
 
+    long last = 0;
     @EventHandler
     public void onRightClick(PlayerInteractEvent e){
+        final long gameTime = Bukkit.getWorld("world").getGameTime();
+        if(last == gameTime){
+            return;
+        }
+        last = gameTime;
         if (WeaponManager.getWeaponAsItem(e.getItem()) != null) {
-
+            System.out.println("weapon right click");
             if(! (e.getAction().equals(Action.RIGHT_CLICK_AIR) || e.getAction().equals(Action.RIGHT_CLICK_BLOCK))) return;
             final Player player = e.getPlayer();
-            final TopenPlayer topenPlayer = PlayerManager.getPlayer(player.getUniqueId());
+            final TopenPlayer topenPlayer = PlayerFileManager.getPlayer(player.getUniqueId());
             final PlayerInventory inventory = e.getPlayer().getInventory();
 
             ItemStack[] tempArray = IntStream.range(0, 9).mapToObj(inventory::getItem).toArray(ItemStack[]::new);
@@ -73,18 +80,46 @@ public class SkillUse implements Listener {
             player.getInventory().setHeldItemSlot(8);
             justChanged = true;
 
+        } else {
+            System.out.println("book right click");
+            final Player player = e.getPlayer();
+            if(waiting.containsKey(player)){
+                final TopenPlayer topenPlayer = PlayerFileManager.getPlayer(player.getUniqueId());
+                final ItemStack item = player.getInventory().getItemInMainHand();
+
+
+                if(!item.getType().isAir()) {
+                    final String regex = ".{6}(.*)";
+                    Pattern pattern = Pattern.compile(regex);
+                    Matcher matcher = pattern.matcher(item.getItemMeta().getDisplayName().replace(ChatColor.LIGHT_PURPLE+"", ""));
+                    String name = "";
+                    if (matcher.find()) {
+                        name = matcher.group(1);
+                    }
+
+                    System.out.println(name);
+                    iActiveSkill skill = ((iActiveSkill) SkillManager.getSkillByName(name));
+                    assert skill != null;
+                    if (topenPlayer.useMana(skill.manaNeeded()))
+                        skill.onUse(player);
+                }
+                IntStream.range(0, 9).forEach(value -> player.getInventory().setItem(value, waiting.get(player).itemStacks[value]));
+                player.getInventory().setHeldItemSlot(waiting.get(player).slot);
+                waiting.remove(player);
+            }
         }
     }
 
     @EventHandler
     public void onItemHeld(PlayerItemHeldEvent e){
-        System.out.println("이거 실행은 됨.");
-        if(!waiting.containsKey(e.getPlayer()) || e.getNewSlot() == 8) return;
-
-        System.out.println("이거 실행은 됨?");
         final Player player = e.getPlayer();
-        if(waiting.containsKey(player)){
+        if(waiting.containsKey(player) && e.getNewSlot() != 8){
+            final TopenPlayer topenPlayer = PlayerFileManager.getPlayer(player.getUniqueId());
             final ItemStack item = player.getInventory().getItem(e.getNewSlot());
+            if (!topenPlayer.isSmartKey()) {
+                if(item != null)
+                    return;
+            }
 
             if(item != null) {
 
@@ -97,7 +132,10 @@ public class SkillUse implements Listener {
                 }
 
                 System.out.println(name);
-                ((iActiveSkill) SkillManager.getSkillByName(name)).onUse(player);
+                iActiveSkill skill = ((iActiveSkill) SkillManager.getSkillByName(name));
+                assert skill != null;
+                if (!topenPlayer.useMana(skill.manaNeeded()))
+                    skill.onUse(player);
             }
             IntStream.range(0, 9).forEach(value -> player.getInventory().setItem(value, waiting.get(player).itemStacks[value]));
             player.getInventory().setHeldItemSlot(waiting.get(player).slot);

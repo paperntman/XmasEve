@@ -1,4 +1,4 @@
-package topen.Skill;
+package topen.commonSkill;
 
 import java.io.Serializable;
 

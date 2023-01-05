@@ -1,6 +1,6 @@
 package topen;
 
-import topen.Skill.iPassiveSkill;
+import topen.commonSkill.iPassiveSkill;
 
 import java.io.Serializable;
 import java.util.ArrayList;

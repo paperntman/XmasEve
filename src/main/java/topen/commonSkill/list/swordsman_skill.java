@@ -1,13 +1,18 @@
-package topen.Skill.list;
+package topen.commonSkill.list;
 
 import org.bukkit.Bukkit;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Player;
 import topen.Main;
-import topen.Skill.iActiveSkill;
+import topen.commonSkill.iActiveSkill;
 
 public class swordsman_skill implements iActiveSkill {
+    @Override
+    public int manaNeeded() {
+        return 30;
+    }
+
     @Override
     public void onUse(Player p) {
         final AttributeInstance attribute = p.getAttribute(Attribute.GENERIC_ATTACK_SPEED);

@@ -1,4 +1,4 @@
-package topen.inventory;
+package topen.commonSkill;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -9,13 +9,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.ItemStack;
-import topen.PlayerManager;
-import topen.Skill.SkillManager;
-import topen.Skill.iPassiveSkill;
-import topen.Skill.iSkill;
+import topen.PlayerFileManager;
 import topen.TopenPlayer;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -24,11 +20,11 @@ import java.util.stream.IntStream;
 
 public class InventoryClick implements Listener {
 
-    class temp{
+    static class temp{
         iSkill iSkill;
         ItemStack[] stacks;
 
-        public temp(topen.Skill.iSkill iSkill, ItemStack[] stacks) {
+        public temp(topen.commonSkill.iSkill iSkill, ItemStack[] stacks) {
             this.iSkill = iSkill;
             this.stacks = stacks;
         }
@@ -54,24 +50,23 @@ public class InventoryClick implements Listener {
                 if(matcher.find()) skillName = matcher.group(1);
                 final iSkill skill = SkillManager.getSkillByName(skillName);
 
-                final TopenPlayer topenPlayer = PlayerManager.getPlayer(player.getUniqueId());
+                final TopenPlayer topenPlayer = PlayerFileManager.getPlayer(player.getUniqueId());
                 if(skill instanceof iPassiveSkill passiveSkill) {
 
-                    System.out.println(Arrays.toString(topenPlayer.iPassiveSkills.toArray()));
-                    if (topenPlayer.iPassiveSkills.contains(passiveSkill.getId())) {
-                        topenPlayer.iPassiveSkills.remove(passiveSkill.getId());
+                    if (!topenPlayer.getIPassiveSkills().contains(passiveSkill.getId())) {
+                        topenPlayer.addPassiveSkill(passiveSkill.getId());
                     }else {
-                        topenPlayer.iPassiveSkills.add(passiveSkill.getId());
+                        topenPlayer.removePassiveSkill(passiveSkill.getId());
                     }
 
-                    PlayerManager.savePlayer(topenPlayer);
+                    PlayerFileManager.savePlayer(topenPlayer);
                     player.openInventory(InventoryCmd.getInventory(player));
 
 
                     SkillManager.skillsUsing.clear();
                     for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-                        final TopenPlayer tempTopen = PlayerManager.getPlayer(onlinePlayer.getUniqueId());
-                        SkillManager.skillsUsing.addAll(tempTopen.iPassiveSkills);
+                        final TopenPlayer tempTopen = PlayerFileManager.getPlayer(onlinePlayer.getUniqueId());
+                        SkillManager.skillsUsing.addAll(tempTopen.getIPassiveSkills());
                     }
 
 
@@ -101,7 +96,7 @@ public class InventoryClick implements Listener {
             final Player player = e.getPlayer();
             final temp temp = waiting.get(player);
 
-            final TopenPlayer topenPlayer = PlayerManager.getPlayer(player.getUniqueId());
+            final TopenPlayer topenPlayer = PlayerFileManager.getPlayer(player.getUniqueId());
             topenPlayer.setHotbar(temp.iSkill.getId(), e.getNewSlot());
             for (int i = 0; i < temp.stacks.length; i++) {
                 player.getInventory().setItem(i, temp.stacks[i]);
